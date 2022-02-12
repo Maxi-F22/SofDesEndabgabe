@@ -1,0 +1,23 @@
+[
+    {
+        "id": 123454,
+        "description": "Kugelschreibers",
+        "date": "2022-02-14T19:20:32.002Z",
+        "price": 12,
+        "deliveryTime": 22,
+        "minOrderLength": 12,
+        "maxOrderLength": 28888,
+        "discountLength": 122,
+        "discountPercent": 12
+    },
+    {
+        "id": 123,
+        "description": "adw",
+        "date": "2022-02-12T19:25:03.742Z",
+        "price": 12,
+        "deliveryTime": 3,
+        "maxOrderLength": 0,
+        "discountLength": 0,
+        "discountPercent": 0
+    }
+]

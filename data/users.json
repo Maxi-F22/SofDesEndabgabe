@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "username": "Superadmin",
+        "password": "password",
+        "isAdmin": true
+    },
+    {
+        "id": 2,
+        "username": "tt",
+        "password": "test",
+        "isAdmin": false
+    },
+    {
+        "id": 3,
+        "username": "test1",
+        "password": "test1",
+        "isAdmin": false
+    },
+    {
+        "id": 4,
+        "username": "test2",
+        "password": "test2",
+        "isAdmin": false
+    },
+    {
+        "id": 5,
+        "username": "test3",
+        "password": "test3",
+        "isAdmin": false
+    }
+]
