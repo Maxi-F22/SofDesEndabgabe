@@ -20,7 +20,8 @@
   "homepage": "https://github.com/Maxi-F22/SofDesEndabgabe#readme",
   "devDependencies": {
     "@types/jest": "^27.4.0",
-    "jest": "^27.5.0",
+    "@types/uuid": "^8.3.4",
+    "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.5.0",
     "ts-node-dev": "^1.1.8",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "@types/prompts": "^2.0.14",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "uuid": "^8.3.2"
   }
 }

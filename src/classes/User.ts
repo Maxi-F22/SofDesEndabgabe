@@ -1,4 +1,5 @@
 import { Answers } from 'prompts';
+import { v4 as uuidv4 } from 'uuid';
 
 // singleton pattern classes
 import ConsoleHandler from "./singletons/ConsoleHandler";
@@ -10,7 +11,7 @@ import { UserJson } from './type/userJson.type';
 import { ErcmSystem, loggedinUser } from "../ERCMSystem";
 
 export class User {
-    private _id: number;
+    private _id: string;
     private _username: string;
     private _password: string;
     private _isAdmin: boolean;
@@ -22,7 +23,7 @@ export class User {
         this._isAdmin = user.isAdmin;
     }
 
-    public getID(): number {
+    public getID(): string {
         return this._id;
     }
 
@@ -124,21 +125,27 @@ export class UserManagement {
         while (true) {
             let usernameGiven: boolean = false;
             newUsername = await ConsoleHandler.question("Neuen Benutzernamen eingeben:");
-            for (let i: number = 0; i < this._users.length; i++) {
-                if (this._users[i].getUsername().toLowerCase() === newUsername.answer.toLowerCase()) {
-                    ConsoleHandler.print("Dieser Benutzername ist bereits vergeben!", 1, true);
-                    usernameGiven = true;
-                    continue;
-                }
+            let usernameValid: boolean = this.checkUsernameValidity(newUsername.answer);
+            if (!usernameValid) {
+                ConsoleHandler.print("Dieser Benutzername ist nicht zulässig!", 1, true);
             }
-            if (!usernameGiven) {
-                break;
+            else {
+                for (let i: number = 0; i < this._users.length; i++) {
+                    if (this._users[i].getUsername().toLowerCase() === newUsername.answer.toLowerCase()) {
+                        ConsoleHandler.print("Dieser Benutzername ist bereits vergeben!", 1, true);
+                        usernameGiven = true;
+                        continue;
+                    }
+                }
+                if (!usernameGiven) {
+                    break;
+                }
             }
         }
         let newPassword: Answers<string> = await ConsoleHandler.question("Neues Passwort eingeben:");
         let newIsAdmin: Answers<string> = await ConsoleHandler.booleanQuestion("Ist der neue Benutzer ein Administrator?");
 
-        let newUser = new User({id: 123, username: "", password: "", isAdmin: false});
+        let newUser = new User({id: uuidv4(), username: "", password: "", isAdmin: false});
         
         if (newUsername && newUsername.answer && newPassword && newPassword.answer && newIsAdmin) {
             newUser.setUsername(newUsername.answer);
@@ -163,7 +170,7 @@ export class UserManagement {
         }
         let idsToDelete: Answers<string> = await ConsoleHandler.multiselect("Wählen Sie die Benutzer aus, die Sie löschen möchten:", "Mit Leerzeichen Benutzer auswählen und mit Enter bestätigen", usersToSelect);
         if (idsToDelete && idsToDelete.selected) {
-            let submitIds: number[] = idsToDelete.selected;
+            let submitIds: string[] = idsToDelete.selected;
             FileHandler.deleteFromFile('../../data/users.json', submitIds);
             ConsoleHandler.print("Erfolgreich gelöscht!", 1);
             setTimeout(() => {this.showUserManagement();}, 2000);
@@ -209,22 +216,28 @@ export class UserManagement {
         
     }
 
-    public async handleEditAnswer(answer: number, idToEdit: number): Promise<void> {
+    public async handleEditAnswer(answer: number, idToEdit: string): Promise<void> {
         switch (answer) {
             case 1:
                 let newUsername: Answers<string> = {};
                 while (true) {
                     let usernameGiven: boolean = false;
                     newUsername = await ConsoleHandler.question("Neuen Benutzernamen eingeben:");
-                    for (let i: number = 0; i < this._users.length; i++) {
-                        if (this._users[i].getUsername().toLowerCase() === newUsername.answer.toLowerCase()) {
-                            ConsoleHandler.print("Dieser Benutzername ist bereits vergeben!", 1, true);
-                            usernameGiven = true;
-                            continue;
-                        }
+                    let usernameValid: boolean = this.checkUsernameValidity(newUsername.answer);
+                    if (!usernameValid) {
+                        ConsoleHandler.print("Dieser Benutzername ist nicht zulässig!", 1, true);
                     }
-                    if (!usernameGiven) {
-                        break;
+                    else {
+                        for (let i: number = 0; i < this._users.length; i++) {
+                            if (this._users[i].getUsername().toLowerCase() === newUsername.answer.toLowerCase()) {
+                                ConsoleHandler.print("Dieser Benutzername ist bereits vergeben!", 1, true);
+                                usernameGiven = true;
+                                continue;
+                            }
+                        }
+                        if (!usernameGiven) {
+                            break;
+                        }
                     }
                 }
                 FileHandler.editFile('../../data/users.json', idToEdit, "username", newUsername.answer);
@@ -249,6 +262,16 @@ export class UserManagement {
             default:
                 this.showUserManagement();
                 break;
+        }
+    }
+
+    public checkUsernameValidity(username: string): boolean {
+        let usernameRegEx: RegExp = new RegExp('^(?=.{4,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$');
+        if (usernameRegEx.test(username) === true) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 }

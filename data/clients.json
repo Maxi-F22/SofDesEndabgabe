@@ -1,1 +1,22 @@
-[{"id":1234453,"firstname":"Test","lastname":"Testname","street":"Teststraße","houseno":122,"city":"Teststadt","zip":122232,"discount":21}]
+[
+    {
+        "id": "e45c5eec-fa21-4f77-b9d0-9eee1efd3850",
+        "firstname": "Max",
+        "lastname": "Mustermann",
+        "street": "Beispielstraße",
+        "houseno": 12,
+        "city": "Stadtstadt",
+        "zip": 79123,
+        "discount": 3
+    },
+    {
+        "id": "19e2f35d-1ad0-46ce-a0b6-5ff533b35235",
+        "firstname": "Testi",
+        "lastname": "Testerson",
+        "street": "Teststraße",
+        "houseno": 123,
+        "city": "Teststadt",
+        "zip": 78987,
+        "discount": 6
+    }
+]

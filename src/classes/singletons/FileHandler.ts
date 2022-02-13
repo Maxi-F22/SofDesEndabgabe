@@ -32,7 +32,7 @@ export class FileHandler {
     }});
   }
 
-  public editFile(pathToFile: string, idToEdit: number, objectLabel: string, dataToWrite: any) : void {
+  public editFile(pathToFile: string, idToEdit: string, objectLabel: string, dataToWrite: any) : void {
     fs.readFile(path.resolve(__dirname, "../"+pathToFile), 'utf8', function readFileCallback(err, data){
       if (err){
           console.log(err);
@@ -48,12 +48,12 @@ export class FileHandler {
     }});
   }
 
-  public deleteFromFile(pathToFile: string, idsToDelete: number[]) : void {
+  public deleteFromFile(pathToFile: string, idsToDelete: string[]) : void {
     fs.readFile(path.resolve(__dirname, "../"+pathToFile), 'utf8', function readFileCallback(err, data){
       if (err){
           console.log(err);
       } else {
-        let array: [{id: number}] = JSON.parse(data);
+        let array: [{id: string}] = JSON.parse(data);
         for (let id of idsToDelete) {
           for (let i: number = 0; i < array.length; i++) {
             if (array[i].id === id) {

@@ -1,32 +1,14 @@
 [
     {
-        "id": 1,
+        "id": "8a602ea7-a0a1-4b83-b1d5-f2cf870734d1",
         "username": "Superadmin",
         "password": "password",
         "isAdmin": true
     },
     {
-        "id": 2,
-        "username": "tt",
-        "password": "test",
-        "isAdmin": false
-    },
-    {
-        "id": 3,
-        "username": "test1",
-        "password": "test1",
-        "isAdmin": false
-    },
-    {
-        "id": 4,
-        "username": "test2",
-        "password": "test2",
-        "isAdmin": false
-    },
-    {
-        "id": 5,
-        "username": "test3",
-        "password": "test3",
+        "id": "13908357-6a11-42bc-ae57-4350c65f58c0",
+        "username": "Normaluser",
+        "password": "userpassword",
         "isAdmin": false
     }
 ]

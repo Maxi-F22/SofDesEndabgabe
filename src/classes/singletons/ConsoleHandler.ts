@@ -23,21 +23,24 @@ class ConsoleHandler {
         });
     }
 
-    public async numberQuestion(question: string, initial: number = 0): Promise<Answers<string>> {
+    public async numberQuestion(question: string, initial: number = 0, min?: number, max?: number): Promise<Answers<string>> {
         return this._prompts({
             type: 'number',
             name: 'answer',
             message: question,
-            initial: initial
+            initial: initial,
+            min: min ? min : -Infinity,
+            max: max? max : Infinity
         });
     }
 
-    public async dateQuestion(question: string): Promise<Answers<string>> {
+    public async dateQuestion(question: string, initial: Date): Promise<Answers<string>> {
         return this._prompts({
             type: 'date',
             name: 'answer',
             message: question,
-            mask: "DD.MM.YYYY"
+            mask: "DD.MM.YYYY",
+            initial: initial
         });
     }
 
@@ -53,12 +56,15 @@ class ConsoleHandler {
     }
 
     public async autoQuestion(message: string, choices: Object[]): Promise<Answers<string>> {
+        const suggestFunction = (input: string, choices: [{title: string}]) => Promise.resolve(choices.filter(i => i.title.toLowerCase().includes(input.toLowerCase())))
+        
         return this._prompts({
             type: 'autocomplete',
             name: 'selected',
             message: message,
             choices: choices,
             limit: 10,
+            suggest: suggestFunction,
         });
     }
 

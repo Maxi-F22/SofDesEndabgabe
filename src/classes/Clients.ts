@@ -1,4 +1,5 @@
 import { Answers } from 'prompts';
+import { v4 as uuidv4 } from 'uuid';
 
 // singleton pattern classes
 import ConsoleHandler from "./singletons/ConsoleHandler";
@@ -7,10 +8,14 @@ import ParsingHandler from './singletons/ParsingHandler';
 
 import { ClientDAO } from "./dao/clientDao";
 import { ClientJson } from './type/clientJson.type';
-import { ErcmSystem, loggedinUser } from "../ERCMSystem";
+import { Order, OrderManagement } from './Orders';
+import { OrderDAO } from './dao/orderDao';
+import { Article } from './Articles';
+import { ArticleDAO } from './dao/articleDao';
+import { ErcmSystem } from "../ERCMSystem";
 
 export class Client {
-    private _id: number;
+    private _id: string;
     private _firstname: string;
     private _lastname: string;
     private _street: string;
@@ -30,7 +35,7 @@ export class Client {
         this._discount = client.discount;
     }
 
-    public getID(): number {
+    public getID(): string {
         return this._id;
     }
 
@@ -176,7 +181,7 @@ export class ClientManagement {
         let newZip: Answers<string> = await ConsoleHandler.numberQuestion("PLZ eingeben:");
         let newDiscount: Answers<string> = await ConsoleHandler.numberQuestion("Rabatt eingeben:");
 
-        let newClient: Client = new Client({id: 123, firstname: "", lastname: "", street: "", houseno: 0, city: "", zip: 0, discount: 0});
+        let newClient: Client = new Client({id: uuidv4(), firstname: "", lastname: "", street: "", houseno: 0, city: "", zip: 0, discount: 0});
 
         newClient.setFirstname(newFirstname.answer);
         newClient.setLastname(newLastname.answer);
@@ -199,7 +204,7 @@ export class ClientManagement {
         }
         let idsToDelete: Answers<string> = await ConsoleHandler.multiselect("Wählen Sie die Kunden aus, die Sie löschen möchten:", "Mit Leerzeichen Kunde auswählen und mit Enter bestätigen", clientsToSelect);
         if (idsToDelete && idsToDelete.selected) {
-            let submitIds: number[] = idsToDelete.selected;
+            let submitIds: string[] = idsToDelete.selected;
             FileHandler.deleteFromFile('../../data/clients.json', submitIds);
             ConsoleHandler.print("Erfolgreich gelöscht!", 1);
             setTimeout(() => {this.showClientManagement();}, 2000);
@@ -212,7 +217,7 @@ export class ClientManagement {
     public async searchClientById(): Promise<void> {
         let clientsToSelect: Object[] = [];
         for (let i: number = 0; i < this._clients.length; i++) {
-            clientsToSelect.push({title: this._clients[i].getID().toString(), value: this._clients[i].getID()})
+            clientsToSelect.push({title: this._clients[i].getID(), value: this._clients[i].getID()})
         }
         let searchClient: Answers<string> = await ConsoleHandler.autoQuestion("Kunde anhand von ID suchen:", clientsToSelect);
         this.chooseClientAction(searchClient.selected);
@@ -227,7 +232,7 @@ export class ClientManagement {
         this.chooseClientAction(searchClients.selected);
     }
 
-    public async chooseClientAction(clientId: number): Promise<void> {
+    public async chooseClientAction(clientId: string): Promise<void> {
         let chosenClientAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
             [
                 {
@@ -257,16 +262,17 @@ export class ClientManagement {
         }
     }
 
-    public async handleClientAnswer(answer: number, clientId: number): Promise<void> {
+    public async handleClientAnswer(answer: number, clientId: string): Promise<void> {
         switch (answer) {
             case 1:
                 this.editClient(clientId);
                 break;
             case 2:
-                // this.showClientStatistic(clientId);
+                this.showClientStatistic(clientId);
                 break;
             case 3:
-                // this.newOrder(clientId);
+                let orderManagement = new OrderManagement;
+                orderManagement.createOrder(clientId);
                 break;
             case 4:
                 this.showClientManagement();
@@ -277,7 +283,7 @@ export class ClientManagement {
         }
     }
 
-    public async editClient(clientId: number): Promise<void> {
+    public async editClient(clientId: string): Promise<void> {
         let chosenEditAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
             [
                 {
@@ -324,7 +330,7 @@ export class ClientManagement {
         
     }
 
-    public async handleEditAnswer(answer: number, idToEdit: number): Promise<void> {
+    public async handleEditAnswer(answer: number, idToEdit: string): Promise<void> {
         switch (answer) {
             case 1:
                 let newFirstname: Answers<string> = await ConsoleHandler.question("Neuen Vornamen eingeben:");
@@ -374,6 +380,96 @@ export class ClientManagement {
             default:
                 this.showClientManagement();
                 break;
+        }
+    }
+
+    public async showClientStatistic(clientId: string) {
+        let client: Client = {} as Client;
+        for (let i: number = 0; i < this._clients.length; i++) {
+            if (this._clients[i].getID() === clientId) {
+                client = this._clients[i];
+            }
+        }
+        let orders: Order[] = [];
+        let orderJson: OrderDAO[] = FileHandler.readFile('../../data/orders.json');
+        for (let order of orderJson) {
+            orders.push(new Order(order));
+        }
+        let articles: Article[] = [];
+        let articleJson: ArticleDAO[] = FileHandler.readFile('../../data/articles.json');
+        for (let article of articleJson) {
+            articles.push(new Article(article));
+        }
+
+        let salesVolumeClient: number = 0;
+        let salesVolumeClientWithoutDiscount: number = 0;
+        let clientDiscount: number = 0;
+        let clientArticles: any = [];
+
+        for (let order of orders) {
+            if (order.getClientId() === clientId) {
+                salesVolumeClient += order.getPrice();
+                salesVolumeClientWithoutDiscount += order.getPriceBeforeCustomerDiscount();
+                let positions: any = order.getPositions();
+                for (let i: number = 0; i < positions.length; i++) {
+                    if (clientArticles.length > 0) {
+                        let checkArticle: number = 0;
+                        for (let j: number = 0; j < clientArticles.length; j++) {
+                            if (clientArticles[j].articleId === positions[i].articleId) {
+                                clientArticles[j].amount += positions[i].amount;
+                                checkArticle += 1;
+                            }
+                        }
+                        if (checkArticle === 0) {
+                            clientArticles.push(positions[i]);
+                        }
+                    }
+                    else {
+                        clientArticles.push(positions[i]);
+                    }
+                }
+            }
+        }
+
+        for (let i: number = 0; i < clientArticles.length; i++) {
+            for (let j: number = 0; j < articles.length; j++) {
+                if (articles[j].getID() === clientArticles[i].articleId) {
+                    clientArticles[i].description = articles[j].getDescription();
+                }
+            }
+        }
+        clientDiscount = salesVolumeClientWithoutDiscount - salesVolumeClient;
+        console.clear();
+        ConsoleHandler.print("Statistik vom Kunden: " + client.getFirstname() + " " + client.getLastname(), 2);
+        ConsoleHandler.print("Gekaufte Artikel:", 1);
+        for (let i: number = 0; i < clientArticles.length; i++) {
+            ConsoleHandler.print("• " + "Beschreibung: " + clientArticles[i].description + ", Anzahl: " + clientArticles[i].amount + " Stück", 1);
+        }
+        ConsoleHandler.print("", 1);
+        ConsoleHandler.print("Gesamtumsatz durch den Kunden:", 1);
+        ConsoleHandler.print(salesVolumeClient.toString() + "€", 2);
+        ConsoleHandler.print("Gesamt gewährter Rabatt:", 1);
+        ConsoleHandler.print(clientDiscount.toFixed(2) + "€", 2);
+        let chosenAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
+            [
+                {
+                    title: "Zurück zur Auswahl",
+                    value: 1
+                },
+            ]
+        );
+        if (chosenAction && chosenAction.selected) {
+            switch (chosenAction.selected) {
+                case 1:
+                    this.chooseClientAction(clientId);
+                    break;
+                default:
+                    this.chooseClientAction(clientId);
+                    break;
+            }
+        }
+        else {
+            this.chooseClientAction(clientId);
         }
     }
 }

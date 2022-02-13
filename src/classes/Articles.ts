@@ -1,4 +1,5 @@
 import { Answers } from 'prompts';
+import { v4 as uuidv4} from 'uuid';
 
 // singleton pattern classes
 import ConsoleHandler from "./singletons/ConsoleHandler";
@@ -7,10 +8,12 @@ import ParsingHandler from './singletons/ParsingHandler';
 
 import { ArticleDAO } from "./dao/articleDao";
 import { ArticleJson } from './type/articleJson.type';
+import { OrderDAO } from './dao/orderDao';
+import { Order, OrderManagement } from './Orders';
 import { ErcmSystem, loggedinUser } from "../ERCMSystem";
 
 export class Article {
-    private _id: number;
+    private _id: string;
     private _description: string;
     private _date: Date;
     private _price: number;
@@ -32,7 +35,7 @@ export class Article {
         this._discountPercent = article.discountPercent;
     }
 
-    public getID(): number {
+    public getID(): string {
         return this._id;
     }
 
@@ -105,9 +108,11 @@ export class Article {
 export class ArticleManagement {
 
     private _articles: Article[] = [];
+    private _dateToday: Date = new Date();
 
     constructor() {
         this.fetchArticles();
+        this._dateToday = new Date(this._dateToday.setHours(1,0,0,0));
     }
 
     public fetchArticles(): void {
@@ -121,30 +126,51 @@ export class ArticleManagement {
 
     public async showArticleManagement(): Promise<void> {
         this.fetchArticles();
-        let chosenAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
-            [
-                {
-                    title: "Artikel nach ID durchsuchen",
-                    value: 1
-                },
-                {
-                    title: "Artikel nach Bezeichnung durchsuchen",
-                    value: 2
-                },
-                {
-                    title: "Artikel anlegen",
-                    value: 3
-                },
-                {
-                    title: "Artikel löschen",
-                    value: 4
-                },
-                {
-                    title: "Zurück gehen",
-                    value: 5
-                },
-            ]
-        );
+        let chosenAction: Answers<string> = {};
+        if (loggedinUser && loggedinUser.getAdminStatus() === true) {
+            chosenAction = await ConsoleHandler.select("Was möchten Sie tun?",
+                [
+                    {
+                        title: "Artikel nach ID durchsuchen",
+                        value: 1
+                    },
+                    {
+                        title: "Artikel nach Bezeichnung durchsuchen",
+                        value: 2
+                    },
+                    {
+                        title: "Artikel anlegen",
+                        value: 3
+                    },
+                    {
+                        title: "Artikel löschen",
+                        value: 4
+                    },
+                    {
+                        title: "Zurück gehen",
+                        value: 5
+                    },
+                ]
+            );
+        }
+        else {
+            chosenAction = await ConsoleHandler.select("Was möchten Sie tun?",
+                [
+                    {
+                        title: "Artikel nach ID durchsuchen",
+                        value: 1
+                    },
+                    {
+                        title: "Artikel nach Bezeichnung durchsuchen",
+                        value: 2
+                    },
+                    {
+                        title: "Zurück gehen",
+                        value: 5
+                    },
+                ]
+            );
+        }
         if (chosenAction && chosenAction.selected) {
             this.handleAnswer(chosenAction.selected);
         }
@@ -178,8 +204,9 @@ export class ArticleManagement {
     }
 
     public async createArticle(): Promise<void> {
+        this._dateToday = new Date(this._dateToday.setHours(1,0,0,0));
         let newDescription: Answers<string> = await ConsoleHandler.question("Beschreibung eingeben:");
-        let newDate: Answers<string> = await ConsoleHandler.dateQuestion("Datum der Markteinführung eingeben: (Standart: heutiges Datum)");
+        let newDate: Answers<string> = await ConsoleHandler.dateQuestion("Datum der Markteinführung eingeben: (Standart: heutiges Datum)", this._dateToday);
         let newPrice: Answers<string> = await ConsoleHandler.numberQuestion("Preis eingeben:");
         let newDeliveryTime: Answers<string> = await ConsoleHandler.numberQuestion("Standartlieferzeit eingeben: (Standart: 3 Tage)", 3);
         let newMinOrderLength: Answers<string> = await ConsoleHandler.numberQuestion("Minimale Bestellgröße eingeben:");
@@ -187,7 +214,7 @@ export class ArticleManagement {
         let newDiscountLength: Answers<string> = await ConsoleHandler.numberQuestion("Rabattbestellgröße eingeben: (Kein Pflichtfeld)");
         let newDiscountPercent: Answers<string> = await ConsoleHandler.numberQuestion("Rabatt in Prozent eingeben: (Kein Pflichtfeld)");
 
-        let newArticle: Article = new Article({id: 123, description: "", date: new Date(), price: 0, deliveryTime: 0, minOrderLength: 0, maxOrderLength: 0, discountLength: 0, discountPercent: 0});
+        let newArticle: Article = new Article({id: uuidv4(), description: "", date: this._dateToday, price: 0, deliveryTime: 0, minOrderLength: 0, maxOrderLength: 0, discountLength: 0, discountPercent: 0});
 
         newArticle.setDescription(newDescription.answer);
         newArticle.setDate(newDate.answer);
@@ -211,7 +238,7 @@ export class ArticleManagement {
         }
         let idsToDelete: Answers<string> = await ConsoleHandler.multiselect("Wählen Sie die Artikel aus, die Sie löschen möchten:", "Mit Leerzeichen Artikel auswählen und mit Enter bestätigen", articlesToSelect);
         if (idsToDelete && idsToDelete.selected) {
-            let submitIds: number[] = idsToDelete.selected;
+            let submitIds: string[] = idsToDelete.selected;
             FileHandler.deleteFromFile('../../data/articles.json', submitIds);
             ConsoleHandler.print("Erfolgreich gelöscht!", 1);
             setTimeout(() => {this.showArticleManagement();}, 2000);
@@ -224,7 +251,7 @@ export class ArticleManagement {
     public async searchArticleById(): Promise<void> {
         let articlesToSelect: Object[] = [];
         for (let i: number = 0; i < this._articles.length; i++) {
-            articlesToSelect.push({title: this._articles[i].getID().toString(), value: this._articles[i].getID()})
+            articlesToSelect.push({title: this._articles[i].getID(), value: this._articles[i].getID()})
         }
         let searchArticle: Answers<string> = await ConsoleHandler.autoQuestion("Artikel anhand von ID suchen:", articlesToSelect);
         this.chooseArticleAction(searchArticle.selected);
@@ -239,7 +266,7 @@ export class ArticleManagement {
         this.chooseArticleAction(searchArticle.selected);
     }
 
-    public async chooseArticleAction(articleId: number): Promise<void> {
+    public async chooseArticleAction(articleId: string): Promise<void> {
         let chosenArticleAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
             [
                 {
@@ -269,16 +296,17 @@ export class ArticleManagement {
         }
     }
 
-    public async handleArticleAnswer(answer: number, articleId: number): Promise<void> {
+    public async handleArticleAnswer(answer: number, articleId: string): Promise<void> {
         switch (answer) {
             case 1:
                 this.editArticle(articleId);
                 break;
             case 2:
-                // this.showArticleStatistic(articleId);
+                this.showArticleStatistic(articleId);
                 break;
             case 3:
-                // this.newOrder(articleId);
+                let orderManagement = new OrderManagement;
+                orderManagement.createOrder("", articleId);
                 break;
             case 4:
                 this.showArticleManagement();
@@ -289,7 +317,7 @@ export class ArticleManagement {
         }
     }
 
-    public async editArticle(articleId: number): Promise<void> {
+    public async editArticle(articleId: string): Promise<void> {
         let chosenEditAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
             [
                 {
@@ -340,7 +368,9 @@ export class ArticleManagement {
         
     }
 
-    public async handleEditAnswer(answer: number, idToEdit: number): Promise<void> {
+    public async handleEditAnswer(answer: number, idToEdit: string): Promise<void> {
+        this._dateToday = new Date();
+        this._dateToday = new Date(this._dateToday.setHours(1,0,0,0));
         switch (answer) {
             case 1:
                 let newDescription: Answers<string> = await ConsoleHandler.question("Neue Beschreibung eingeben:");
@@ -349,7 +379,7 @@ export class ArticleManagement {
                 setTimeout(() => {this.showArticleManagement();}, 2000);
                 break;
             case 2:
-                let newDate: Answers<string> = await ConsoleHandler.dateQuestion("Neues Markteinführungs eingeben:");
+                let newDate: Answers<string> = await ConsoleHandler.dateQuestion("Neues Markteinführungsdatum eingeben:", this._dateToday);
                 FileHandler.editFile('../../data/articles.json', idToEdit, "date", newDate.answer);
                 ConsoleHandler.print("Erfolgreich geändert!", 1);
                 setTimeout(() => {this.showArticleManagement();}, 2000);
@@ -398,4 +428,67 @@ export class ArticleManagement {
                 break;
         }
     }
+
+    public async showArticleStatistic(articleId: string) {
+        let article: Article = {} as Article;
+        for (let i: number = 0; i < this._articles.length; i++) {
+            if (this._articles[i].getID() === articleId) {
+                article = this._articles[i];
+            }
+        }
+        let orders: Order[] = [];
+        let orderJson: OrderDAO[] = FileHandler.readFile('../../data/orders.json');
+        for (let order of orderJson) {
+            orders.push(new Order(order));
+        }
+
+        let amountOrdered: number = 0;
+        let amountOrders: number = 0;
+        let salesVolume: number = 0;
+        let salesVolumePerOrder: number = 0;
+
+        for (let order of orders) {
+            let positions: any = order.getPositions();
+            for (let i: number = 0; i < positions.length; i++) {
+                if (positions[i].articleId === articleId) {
+                    amountOrdered += positions[i].amount;
+                    salesVolume += positions[i].positionPrice;
+                    amountOrders += 1;
+                }
+            }
+        }
+        salesVolumePerOrder = parseFloat((salesVolume / amountOrders).toFixed(2));
+        console.clear();
+        ConsoleHandler.print("Statistik vom Artikel: " + article.getDescription(), 2);
+        ConsoleHandler.print("Gesamtzahl Verkäufe:", 1);
+        ConsoleHandler.print(amountOrdered.toString(), 2);
+        ConsoleHandler.print("Zahl der Bestellungen mit Artikel:", 1);
+        ConsoleHandler.print(amountOrders.toString(), 2);
+        ConsoleHandler.print("Gesamtumsatz:", 1);
+        ConsoleHandler.print(salesVolume.toString() + "€", 2);
+        ConsoleHandler.print("Durchschnitt des Umsatzes pro Bestellung mit Artikel:", 1);
+        ConsoleHandler.print(salesVolumePerOrder.toString() + "€", 2);
+        let chosenAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
+            [
+                {
+                    title: "Zurück zur Auswahl",
+                    value: 1
+                },
+            ]
+        );
+        if (chosenAction && chosenAction.selected) {
+            switch (chosenAction.selected) {
+                case 1:
+                    this.chooseArticleAction(articleId);
+                    break;
+                default:
+                    this.chooseArticleAction(articleId);
+                    break;
+            }
+        }
+        else {
+            this.chooseArticleAction(articleId);
+        }
+    }
+
 }

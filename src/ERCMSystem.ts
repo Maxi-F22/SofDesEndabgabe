@@ -9,6 +9,7 @@ import { UserDAO } from "./classes/dao/userDao";
 import { User, UserManagement } from "./classes/User"
 import { ArticleManagement } from './classes/Articles';
 import { ClientManagement } from './classes/Clients';
+import { OrderManagement } from './classes/Orders';
 
 export let loggedinUser: User = {} as User;
 
@@ -61,30 +62,55 @@ export class ErcmSystem {
     }
 
     public async showHomeScreen(): Promise<void> {
-        let chosenAction: Answers<string> = await ConsoleHandler.select("Was möchten Sie tun?",
-            [
-                {
-                    title: "Artikelverwaltung",
-                    value: 1
-                },
-                {
-                    title: "Kundenverwaltung",
-                    value: 2
-                },
-                {
-                    title: "Bestellungsverwaltung",
-                    value: 3
-                },
-                {
-                    title: "Nutzerverwaltung",
-                    value: 4
-                },
-                {
-                    title: "Abmelden",
-                    value: 5
-                },
-            ]
-        );
+        let chosenAction: Answers<string> = {}; 
+        if (loggedinUser && loggedinUser.getAdminStatus() === true) {
+            chosenAction = await ConsoleHandler.select("Was möchten Sie tun?",
+                [
+                    {
+                        title: "Artikelverwaltung",
+                        value: 1
+                    },
+                    {
+                        title: "Kundenverwaltung",
+                        value: 2
+                    },
+                    {
+                        title: "Bestellungsverwaltung",
+                        value: 3
+                    },
+                    {
+                        title: "Nutzerverwaltung",
+                        value: 4
+                    },
+                    {
+                        title: "Abmelden",
+                        value: 5
+                    },
+                ]
+            );
+        }
+        else {
+            chosenAction = await ConsoleHandler.select("Was möchten Sie tun?",
+                [
+                    {
+                        title: "Artikelverwaltung",
+                        value: 1
+                    },
+                    {
+                        title: "Kundenverwaltung",
+                        value: 2
+                    },
+                    {
+                        title: "Bestellungsverwaltung",
+                        value: 3
+                    },
+                    {
+                        title: "Abmelden",
+                        value: 5
+                    },
+                ]
+            );
+        }
         if (chosenAction && chosenAction.selected) {
             this.handleAnswer(chosenAction.selected);
         }
@@ -104,7 +130,8 @@ export class ErcmSystem {
                 clientManagement.showClientManagement();
                 break;
             case 3:
-                // Order.showOrderManagement();
+                let orderManagement = new OrderManagement;
+                orderManagement.showOrderManagement();
                 break;
             case 4:
                 let userManagement = new UserManagement;

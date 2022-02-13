@@ -1,0 +1,66 @@
+[
+    {
+        "id": "6c6f3576-4a13-4b96-83f0-628bfe00ed52",
+        "orderDate": "2022-02-13T00:00:00.000Z",
+        "deliveryDate": "2022-02-16T00:00:00.000Z",
+        "price": 1823.6,
+        "priceWithoutDiscount": 1880,
+        "priceBeforeCustomerDiscount": 1880,
+        "clientId": "e45c5eec-fa21-4f77-b9d0-9eee1efd3850",
+        "positions": [
+            {
+                "articleId": "f5d25e00-4b65-424c-b77b-dac2897151db",
+                "amount": 20,
+                "positionPrice": 80
+            },
+            {
+                "articleId": "366c23ae-e00b-45e2-afcb-317680b90b29",
+                "amount": 150,
+                "positionPrice": 1800
+            }
+        ],
+        "totalDiscount": 3,
+        "description": "Mustermann, 13.2.2022"
+    },
+    {
+        "id": "4ad7395f-a932-4bbc-854e-9831b7c592a6",
+        "orderDate": "2022-02-13T00:00:00.000Z",
+        "deliveryDate": "2022-02-15T00:00:00.000Z",
+        "price": 1786,
+        "priceWithoutDiscount": 2000,
+        "priceBeforeCustomerDiscount": 1900,
+        "clientId": "19e2f35d-1ad0-46ce-a0b6-5ff533b35235",
+        "positions": [
+            {
+                "articleId": "f5d25e00-4b65-424c-b77b-dac2897151db",
+                "amount": 500,
+                "positionPrice": 1900
+            }
+        ],
+        "totalDiscount": 10.7,
+        "description": "Testerson, 13.2.2022"
+    },
+    {
+        "id": "dc908af7-0869-4abc-9d70-20bd410bce2f",
+        "orderDate": "2022-02-13T00:00:00.000Z",
+        "deliveryDate": "2022-02-16T00:00:00.000Z",
+        "price": 34726,
+        "priceWithoutDiscount": 38000,
+        "priceBeforeCustomerDiscount": 35800,
+        "clientId": "e45c5eec-fa21-4f77-b9d0-9eee1efd3850",
+        "positions": [
+            {
+                "articleId": "f5d25e00-4b65-424c-b77b-dac2897151db",
+                "amount": 8000,
+                "positionPrice": 30400
+            },
+            {
+                "articleId": "366c23ae-e00b-45e2-afcb-317680b90b29",
+                "amount": 500,
+                "positionPrice": 5400
+            }
+        ],
+        "totalDiscount": 8.62,
+        "description": "Mustermann, 13.2.2022"
+    }
+]

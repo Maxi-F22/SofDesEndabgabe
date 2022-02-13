@@ -1,5 +1,5 @@
 export type ArticleJson = {
-    id: number,
+    id: string,
     description: string,
     date: Date,
     price: number,

@@ -1,5 +1,5 @@
 export class ArticleDAO {
-    public id: number;
+    public id: string;
     public description: string;
     public date: Date;
     public price: number;

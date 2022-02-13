@@ -1,23 +1,35 @@
 [
     {
-        "id": 123454,
-        "description": "Kugelschreibers",
-        "date": "2022-02-14T19:20:32.002Z",
-        "price": 12,
-        "deliveryTime": 22,
-        "minOrderLength": 12,
-        "maxOrderLength": 28888,
-        "discountLength": 122,
-        "discountPercent": 12
+        "id": "49f4a61b-2c28-4c92-909d-e77866a73936",
+        "description": "Monitor",
+        "date": "2022-02-15T00:00:00.000Z",
+        "price": 122,
+        "deliveryTime": 4,
+        "minOrderLength": 1,
+        "maxOrderLength": 20,
+        "discountLength": 15,
+        "discountPercent": 25
     },
     {
-        "id": 123,
-        "description": "adw",
-        "date": "2022-02-12T19:25:03.742Z",
+        "id": "f5d25e00-4b65-424c-b77b-dac2897151db",
+        "description": "Ladekabel",
+        "date": "2022-02-13T00:00:00.000Z",
+        "price": 4,
+        "deliveryTime": 2,
+        "minOrderLength": 10,
+        "maxOrderLength": 10000,
+        "discountLength": 400,
+        "discountPercent": 5
+    },
+    {
+        "id": "366c23ae-e00b-45e2-afcb-317680b90b29",
+        "description": "Test",
+        "date": "2022-02-11T00:00:00.000Z",
         "price": 12,
         "deliveryTime": 3,
-        "maxOrderLength": 0,
-        "discountLength": 0,
-        "discountPercent": 0
+        "minOrderLength": 23,
+        "maxOrderLength": 1232,
+        "discountLength": 400,
+        "discountPercent": 10
     }
 ]

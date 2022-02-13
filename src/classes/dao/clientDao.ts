@@ -1,5 +1,5 @@
 export class ClientDAO {
-    public id: number;
+    public id: string;
     public firstname: string;
     public lastname: string;
     public street: string;
